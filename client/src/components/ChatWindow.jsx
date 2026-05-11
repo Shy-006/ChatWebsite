@@ -69,6 +69,7 @@ const ChatWindow = ({ user, activeChat, setActiveChat, socket }) => {
       const handleReceiveMessage = (data) => {
         if (data.chatId === activeChat.id) {
           setMessages(prev => [...prev, data]);
+          socket.emit('mark_messages_read', activeChat.id);
         }
       };
 

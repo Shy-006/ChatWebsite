@@ -17,21 +17,37 @@ const Sidebar = ({ user, setUser, activeChat, setActiveChat, socket }) => {
       socket.on('chat_deleted', fetchChatsWrapper);
       
       const handleNewMessage = (notification) => {
-        setChats(prevChats => prevChats.map(chat => {
-          if (chat._id === notification.chatId) {
-            // Only increment count if we are not currently viewing this chat
-            if (activeChat?.id !== chat._id) {
-              const updatedCounts = { ...(chat.unreadCounts || {}) };
-              updatedCounts[user.id] = notification.unreadCount;
-              return { 
-                ...chat, 
-                latestMessage: { content: notification.message.text },
-                unreadCounts: updatedCounts
-              };
-            }
+        setChats(prevChats => {
+          const chatExists = prevChats.some(c => c._id === notification.chatId);
+          if (!chatExists) {
+            fetchChats();
+            return prevChats;
           }
-          return chat;
-        }));
+          
+          return prevChats.map(chat => {
+            if (chat._id === notification.chatId) {
+              if (activeChat?.id !== chat._id) {
+                const updatedCounts = { ...(chat.unreadCounts || {}) };
+                updatedCounts[user.id] = notification.unreadCount;
+                return { 
+                  ...chat, 
+                  latestMessage: { content: notification.message.text },
+                  unreadCounts: updatedCounts
+                };
+              } else {
+                return { 
+                  ...chat, 
+                  latestMessage: { content: notification.message.text }
+                };
+              }
+            }
+            return chat;
+          }).sort((a, b) => {
+            if (a._id === notification.chatId) return -1;
+            if (b._id === notification.chatId) return 1;
+            return 0;
+          });
+        });
       };
       
       socket.on('new_message_notification', handleNewMessage);
