@@ -16,8 +16,11 @@ const Message = require('./models/Message');
 const Chat = require('./models/Chat');
 
 const app = express();
+
+const corsOrigin = process.env.FRONTEND_URL || "http://localhost:5173";
+
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: corsOrigin,
   credentials: true
 }));
 app.use(express.json());
@@ -32,7 +35,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: corsOrigin,
     credentials: true,
     methods: ["GET", "POST"]
   }

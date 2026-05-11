@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: API_URL,
   withCredentials: true // Crucial for sending/receiving cookies
 });
 
@@ -13,7 +15,7 @@ api.interceptors.response.use((response) => {
   if (error.response && error.response.status === 403 && !originalRequest._retry) {
     originalRequest._retry = true;
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/refresh-token', {}, { withCredentials: true });
+      const res = await axios.post(`${API_URL}/auth/refresh-token`, {}, { withCredentials: true });
       
       if (res.status === 200) {
         // The new token is set via Set-Cookie, so we just retry the request
