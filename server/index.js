@@ -174,10 +174,12 @@ io.on('connection', (socket) => {
       if (!chat) return;
       if (!chat.users.includes(socket.user.id)) return;
 
-      await Message.deleteMany({ chat: chatId });
-      await Chat.findByIdAndDelete(chatId);
+      if (!chat.deletedAt) chat.deletedAt = new Map();
+      chat.deletedAt.set(socket.user.id.toString(), new Date());
+      await chat.save();
 
-      io.to(chatId).emit('chat_deleted', chatId);
+      // Emit ONLY to the specific user's room so their UI updates
+      io.to(socket.user.id).emit('chat_deleted', chatId);
     } catch(err) {
       console.error(err);
     }

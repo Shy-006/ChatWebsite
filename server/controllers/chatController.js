@@ -63,7 +63,19 @@ exports.fetchChats = async (req, res) => {
           path: "latestMessage.sender",
           select: "username profilePic",
         });
-        res.status(200).send(results);
+
+        const filteredResults = results.filter(chat => {
+          if (!chat.deletedAt) return true;
+          const deletedAtStr = chat.deletedAt.get(req.user._id.toString());
+          if (!deletedAtStr) return true;
+          
+          if (!chat.latestMessage) return false;
+          
+          const deletedAt = new Date(deletedAtStr);
+          return new Date(chat.latestMessage.createdAt) > deletedAt;
+        });
+
+        res.status(200).send(filteredResults);
       });
   } catch (error) {
     res.status(400).json({ message: error.message });
