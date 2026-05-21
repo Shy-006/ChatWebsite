@@ -22,8 +22,10 @@ api.interceptors.response.use((response) => {
         return api(originalRequest);
       }
     } catch (refreshError) {
-      // Refresh token failed, redirect to login
-      window.location.href = '/login';
+      // Refresh token failed, redirect to login if not already on login/signup page to prevent loop
+      if (!window.location.pathname.endsWith('/login') && !window.location.pathname.endsWith('/signup')) {
+        window.location.href = '/login';
+      }
     }
   }
   return Promise.reject(error);
